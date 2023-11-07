@@ -2,16 +2,16 @@ clc
 clear
 pathname='F:\ZLH\Basilisk\share\vertical\cell2\14bounce\';
 divide=load([pathname,'divide_bounce1.mat']);
-err2=0.01042;
-err3=1.88559E-7;
-err4=0;
+err2=0.00482;
+err3=7.68874E-8;
+err4=3.28706;
 c1=-3.63E-03;
-c2=0.14335;
-c3=8.83964E-7;
-c4=-24.84046;
+c2=0.08838;
+c3=1.33447E-7;
+c4=-63.12748;
 c2_array=(c2-err2):1e-4:(c2+err2);
 c3_array=(c3-err3):1e-9:(c3+err3);
-% c4_array=(c4-err4):0:(c4+err4);
+c4_array=(c4-err4):0.1:(c4+err4);
 
 
 tf=divide.test(length(divide.test(:,1)),1);%tf=0.036144000000000;
@@ -27,31 +27,38 @@ v_end=divide.test(length(divide.test(:,1)),2);
 a_end=divide.test(length(divide.test(:,1)),4);
 double a_test;
 t_array=t0:h:tf;
-%%%%%%%%%%%%%%%有C4且固定
+%%%%%%%%%%%%%%%有C4且不固定
 % 起始与结束时刻不变，确定合适的c2、c3、c4误差值
-err_a=zeros(length(c2_array),length(c3_array));
+err_a=zeros(length(c2_array),length(c3_array),length(c4_array));
 for i=1:length(c2_array)
     for j=1:length(c3_array)
-        c2=c2_array(i);
-        c3=c3_array(j);
-        tspan = [t0, tf];
-        [t,y] = RK4(@f, tspan, y0, h, c1, c2, c3, c4);
-        for k=1:length(t)
-            a(k)=c1*(y(2,k)+c2)./(y(1,k)+c3)+c4*(y(2,k)+0.209062+c2)*(y(2,k)+0.209062+c2);
+        for m=1:length(c4_array)
+            c2=c2_array(i);
+            c3=c3_array(j);
+            c4=c4_array(m);
+            tspan = [t0, tf];
+            [t,y] = RK4(@f, tspan, y0, h, c1, c2, c3, c4);
+            for k=1:length(t)
+                a(k)=c1*(y(2,k)+c2)./(y(1,k)+c3)+c4*y(2,k)*y(2,k);
+            end
+            err_a(i,j,m)=abs((a_end-a(length(t)))/a_end);
         end
-        err_a(i,j)=abs((a_end-a(length(t)))/a_end);
     end
 end
 err_min_a=1;
 for i=1:length(c2_array)
     for j=1:length(c3_array)
-        if(err_a(i,j)<err_min_a)
-            err_min_a=err_a(i,j);
-            c2=c2_array(i);
-            c3=c3_array(j);
+        for m=1:length(c4_array)
+            if(err_a(i,j,m)<err_min_a)
+                err_min_a=err_a(i,j,m);
+                c2=c2_array(i);
+                c3=c3_array(j);
+                c4=c4_array(m);
+            end
         end
     end
 end
+
 % %%%%%%%%%%%%%%%有C4且不固定
 % % 起始与结束时刻不变，确定合适的c2、c3、c4误差值
 % err_a=zeros(length(c2_array),length(c3_array),length(c4_array));
