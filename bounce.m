@@ -1,24 +1,23 @@
-clc
-clear
-pathname='F:\ZLH\Basilisk\share\vertical\cell2\14bounce\';
-divide=load([pathname,'divide_bounce1.mat']);
-err2=0.00462;
-err3=7.71784E-8;
-err4=11.38073;
-err5=0.12231;
-c1=-4.09E-03;
-c2=0.06487;
-c3=2.15438E-7;
-c4=-26.93764;
-c5=0.50267;
-% c2_array=(c2-err2):5e-5:(c2+err2);
-% c3_array=(c3-err3):1e-9:(c3+err3);
-% % c4_array=(c4-err4):0.1:(c4+err4);
-% c5_array=(c5-err5):1e-4:(c5+err5);
-c2_array=(c2-err2):4e-4:(c2+err2);
-c3_array=(c3-err3):8e-9:(c3+err3);
-c4_array=(c4-err4):1:(c4+err4);
-c5_array=(c5-err5):0.01:(c5+err5);
+% clc
+% clear
+% %t(s) v(m/s) h(m) a(m/s^2) y(m) i maxlevel
+% pathname='F:\ZLH\Basilisk\share\vertical\cell2\14bounce\';
+% divide=load([pathname,'divide_bounce1.mat']);
+err2=0.00251;
+err3=0.029;
+err4=3.47225E-8;
+% err5=0.12728; 
+c1=-0.00385;
+c2=0.06531;
+c3=0.08264;
+c4=1.55184E-7;
+c5=0;
+c2_array=(c2-err2):2e-4:(c2+err2);
+c3_array=(c3-err3):0.002:(c3+err3);
+c4_array=(c4-err4):2e-9:(c4+err4);
+% c2_array=(c2-err2):1e-4:(c2+err2);
+% c3_array=(c3-err3):2e-9:(c3+err3);
+% c5_array=(c5-err5):0.01:(c5+err5); 
 
 tf=divide.test(length(divide.test(:,1)),1);%tf=0.03 6144000000000;
 
@@ -36,22 +35,22 @@ double a_test;
 t_array=t0:h:tf;
 %%%%%%%%%%%%%%%有C4且不固定
 % 起始与结束时刻不变，确定合适的c2、c3、c4误差值
-err_a=zeros(length(c2_array),length(c3_array),length(c4_array),length(c5_array));
+err_a=zeros(length(c2_array),length(c3_array),length(c4_array));
 for i=1:length(c2_array)
     for j=1:length(c3_array)
         for k=1:length(c4_array)
-            for n=1:length(c5_array)
+%             for n=1:length(c5_array)
                 c2=c2_array(i);
                 c3=c3_array(j);
                 c4=c4_array(k);
-                c5=c5_array(n);
+%                 c5=c5_array(n);
                 tspan = [t0, tf];
                 [t,y] = RK4(@f, tspan, y0, h, c1, c2, c3, c4, c5);
                 for m=1:length(t)
-                    a(m)=c1*(y(2,m)+c2)./(y(1,m)+c3)+c4*(y(2,m)+c5)*(y(2,m)+c5);
+                    a(m)=c1*(y(2,m)+c2)/(y(1,m)+c4)-28.00798232*(y(2,m)+c3)*(y(2,m)+c3)-8.63406;
                 end
-                err_a(i,j,k,n)=abs((a_end-a(length(t)))/a_end);
-            end
+                err_a(i,j,k)=abs((a_end-a(length(t)))/a_end);
+%             end
         end
     end
 end 
@@ -59,87 +58,29 @@ err_min_a=1;
 for i=1:length(c2_array)
     for j=1:length(c3_array)
         for k=1:length(c4_array)
-            for n=1:length(c5_array)
+%             for n=1:length(c5_array)
                 if(err_a(i,j,k)<err_min_a)
-                    err_min_a=err_a(i,j,k,n);
+                    err_min_a=err_a(i,j,k);
                     c2=c2_array(i);
                     c3=c3_array(j);
                     c4=c4_array(k);
-                    c5=c5_array(n);
+%                     c5=c5_array(n);
                 end
-            end
+%             end
         end
     end
 end
-
-% %%%%%%%%%%%%%%%有C4且不固定
-% % 起始与结束时刻不变，确定合适的c2、c3、c4误差值
-% err_a=zeros(length(c2_array),length(c3_array),length(c4_array));
-% for i=1:length(c2_array)
-%     for j=1:length(c3_array)
-%         for m=1:length(c4_array)
-%             c2=c2_array(i);
-%             c3=c3_array(j);
-%             c4=c4_array(m);
-%             tspan = [t0, tf];
-%             [t,y] = RK4(@f, tspan, y0, h, c1, c2, c3, c4);
-%             for k=1:length(t)
-%                 a(k)=c1*(y(2,k)+c2)./(y(1,k)+c3)+c4*y(2,k)*y(2,k)+0.063757245*y(3,k);
-%             end
-%             err_a(i,j,m)=abs((a_end-a(length(t)))/a_end);
-%         end
-%     end
-% end
-% err_min_a=1;
-% for i=1:length(c2_array)
-%     for j=1:length(c3_array)
-%         for m=1:length(c4_array)
-%             if(err_a(i,j)<err_min_a)
-%                 err_min_a=err_a(i,j);
-%                 c2=c2_array(i);
-%                 c3=c3_array(j);
-%                 c4=c4_array(m);
-%             end
-%         end
-%     end
-% end
-%%%%%%%%%%%%%%无c4
-% err_a=zeros(length(c2_array),length(c3_array));
-% for i=1:length(c2_array)
-%     for j=1:length(c3_array)
-%             c2=c2_array(i);
-%             c3=c3_array(j);
-%             tspan = [t0, tf];
-%             [t,y] = RK4(@f, tspan, y0, h, c1, c2, c3, c4);
-%             for k=1:length(t)
-%                 a(k)=c1*(y(2,k)+c2)./(y(1,k)+c3)+c4*(y(2,k)+c2)*(y(2,k)+c2)+0.063757245*y(3,k);
-%             end
-%             err_a(i,j)=abs((a_end-a(length(t)))/a_end);
-%     end
-% end
-% err_min_a=1;
-% for i=1:length(c2_array)
-%     for j=1:length(c3_array)
-%             if(err_a(i,j)<err_min_a)
-%                 err_min_a=err_a(i,j);
-%                 c2=c2_array(i);
-%                 c3=c3_array(j);
-%             end
-%     end
-% end
-%%%%%%%%%%%%%%%%
 %结束时刻不变，改变起始时刻，确定外推误差最小的起始时刻
-err_t=zeros(length(divide.train(:,1)));
-for k=2:length(divide.train(:,1))
+err_t=zeros(length(divide.train(:,1)),1);
+for k=1:length(divide.train(:,1))
     t0=divide.train(k,1);
     tspan = [t0, tf];
     y0 = [divide.train(k,3);divide.train(k,2)];
-%     af0 = divide.train(k-1,4);
     [t,y] = RK4(@f, tspan, y0, h, c1, c2, c3, c4, c5);
     for m=1:length(t)
-        a(m)=c1*(y(2,m)+c2)./(y(1,m)+c3)+c4*(y(2,m)+c5)*(y(2,m)+c5);
+        a(m)=c1*(y(2,m)+c2)/(y(1,m)+c4)-28.00798232*(y(2,m)+c3)*(y(2,m)+c3)-8.63406;
     end
-    err_t(k)=abs((a_end-a(length(t)))/a_end);
+    err_t(k,1)=abs((a_end-a(length(t)))/a_end);
 end
 err_min_t=1;
 for k=2:length(divide.train(:,1))
@@ -151,7 +92,7 @@ for k=2:length(divide.train(:,1))
     end
 end
 %%%%%%%%%扩展：与数值模拟时刻对比
-h=-0.0000001;
+h=-0.0000002;
 tspan = [t0, tf];
 [t,y] = RK4(@f, tspan, y0, h, c1, c2, c3, c4, c5);
 % a_s,a_extend,error,t,h,v
@@ -161,8 +102,8 @@ for i=1:length(divide.test(:,1))
     tf=divide.test(i,1);
     tspan = [t0, tf];
     [t,y] = RK4(@f, tspan, y0, h, c1, c2, c3, c4, c5);
-    for k=1:length(t)
-        a_t(k)=c1*(y(2,k)+c2)./(y(1,k)+c3)+c4*(y(2,k)+c5)*(y(2,k)+c5);
+    for m=1:length(t)
+        a_t(m)=c1*(y(2,m)+c2)/(y(1,m)+c4)-28.00798232*(y(2,m)+c3)*(y(2,m)+c3)-8.63406;
     end
     a_extend(i,1)=divide.test(i,4);
     a_extend(i,2)=a_t(length(t));
