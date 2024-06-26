@@ -1,23 +1,27 @@
 clc
 clear
 test_l=14;
-pathname='F:\ZLH\Basilisk\share\super-test\case\result\3\bounce\';
+pathname='F:\ZLH\Basilisk\share\super-test\case\result\3\bounce\';%定义路径
+%加载数值模拟结果文件到数组mydata中
 mydata=load('F:\ZLH\Basilisk\share\super-test\case\result\3\bounce\bounce-level.dat');
-data_para=zeros(5,1);%impact-end(length(impact)),bounce-start,bounce-peak,length(impact),length(bounce)
-bounce_start1=1347;%%%%%%%%%%%%%
-bounce_start2=2355;%%%%%%%%%%%%%
+data_para=zeros(5,1);%下落结束时间步,回弹开始时间步,回弹到最高点的时间步,下落的数组长度,回弹数组长度
+bounce_start1=1347;%第一次回弹开始时间步
+bounce_start2=2355;%第二次回弹时间步——如果有的话
 data_para(1,1)=bounce_start1-1;
 data_para(2,1)=bounce_start1;
 data_para(4,1)=data_para(1,1);
 for i=bounce_start1:bounce_start2-1
+    % 通过速度符号变化确定弹跳的最高点
     if(mydata(i,8)<0.&&mydata(i-1,8)>0.)
         data_para(3,1)=i-1;
     end
 end
+%计算回弹数组长度
 data_para(5,1)=data_para(3,1)-data_para(2,1)+1;
+% 初始化两个数组，用于存储下落和回弹的数据
 impact=zeros(data_para(4,1),length(mydata(1,:)));
 bounce1=zeros(data_para(5,1),length(mydata(1,:)));
-%%%%%%%数据填充
+%数据填充 - 从原始数据中提取下落和回弹数据
 for j=1:length(mydata(1,:))
     for i=1:length(impact(:,1))
         impact(i,j)=mydata(i,j);
@@ -26,7 +30,7 @@ for j=1:length(mydata(1,:))
         bounce1(i,j)=mydata(data_para(1,1)+i,j);
     end
 end
-%%%%%%%
+%重新加载pathname和mydata
 pathname='F:\ZLH\Basilisk\share\super-test\case\result\3\bounce\';
 mydata=load('F:\ZLH\Basilisk\share\super-test\case\result\3\bounce\bounce-level.dat');
 d=1;
