@@ -8,6 +8,7 @@ function [t, y] = RK4(f, tspan, y0, h, c1, c2, c3, c4, c5, c6)
     n = length(t);
     y = zeros(length(y0), n);
     y(:, 1) = y0;
+    %四阶龙格库塔
     for i=1:n-1
         k1 = f(t(i), y(:, i), c1, c2, c3, c4, c5, c6);
         k2 = f(t(i) + 0.5*h, y(:, i) + 0.5*h*k1, c1, c2, c3, c4, c5, c6);
