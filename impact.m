@@ -1,22 +1,29 @@
 clc
 clear
-pathname='F:\ZLH\Basilisk\share\super-test\case\result\3\rand\';
+pathname='F:\ZLH\Basilisk\share\super-test\case\result\3\rand\';%定义路径
+%读入数值模拟结果文件存储在mydata数组中
 mydata=load('F:\ZLH\Basilisk\share\super-test\case\result\3\rand\bounce-level.dat');
+%定义参数数组：初次下落的终点，第一次回弹的起点，第一次回弹的最高点，下落数组长度，回弹数组长度
 data_para=zeros(5,1);%impact-end(length(impact)),bounce-start,bounce-peak,length(impact),length(bounce)
-bounce_start1=1347;%%%%%%%%%%%%%
-bounce_start2=2355;%%%%%%%%%%%%%
+%回弹时间步——如果有两次回弹定义两个回弹时间步
+bounce_start1=1347;%第一次开始回弹时间步，自己从数值模拟结果中找
+bounce_start2=2355;%第二次开始回弹时间步，自己从数值模拟结果中找
 data_para(1,1)=bounce_start1-1;
 data_para(2,1)=bounce_start1;
 data_para(4,1)=data_para(1,1);
+%寻找初次回弹最高点
 for i=bounce_start1:bounce_start2-1
     if(mydata(i,8)<0.&&mydata(i-1,8)>0.)
         data_para(3,1)=i-1;
     end
 end
+%计算第一次回弹数组长度
 data_para(5,1)=data_para(3,1)-data_para(2,1)+1;
+%定义数组impact存储下落数据
 impact=zeros(data_para(4,1),length(mydata(1,:)));
+%定义数组bounce1存储第一次回弹数据
 bounce1=zeros(data_para(5,1),length(mydata(1,:)));
-%%%%%%%数据填充
+%数据填充
 for j=1:length(mydata(1,:))
     for i=1:length(impact(:,1))
         impact(i,j)=mydata(i,j);
@@ -25,14 +32,14 @@ for j=1:length(mydata(1,:))
         bounce1(i,j)=mydata(data_para(1,1)+i,j);
     end
 end
-%%%%%%%
+%读入数值模拟结果文件存储在mydata数组中
 mydata=load('F:\ZLH\Basilisk\share\super-test\case\result\3\rand\bounce-level.dat');
-d=1;
-impact_start=0;
-impact_end=data_para(1,1);
-bounce1_start=0;
-bounce1_end=0;
-parameter=zeros(6,1);
+d=1;%小球半径
+impact_start=0; % 初始化下落开始时间
+impact_end=data_para(1,1); % 下落结束时间，data_para变量需要定义
+bounce1_start=0; % 初始化回弹开始时间
+bounce1_end=0; % 初始化回弹结束时间
+parameter=zeros(6,1); % 初始化参数数组
 %根据加速度正负交替选取润滑力作用范围
 %impact加速度选取
 for i=2:length(impact(:,1))%润滑力不会从一开始主导
@@ -81,7 +88,7 @@ for i=1:length(impact_data(:,1))
     impact_data(i,6)=impact(i+impact_start-1,1);%i
     impact_data(i,7)=impact(i+impact_start-1,16);%maxlevel
 end
-% 阈值 - 你需要根据数据设置这个阈值
+% 设置阈值以过滤数据
 deviation_threshold = 0.2;
 
 % 初始化逻辑索引为所有true（保持所有行）
@@ -171,11 +178,11 @@ set(gca, 'FontSize', 24, 'FontName', 'Times New Roman');
 %%%%%%%%%%%%%%%%%
 % 指定文件保存路径路径和文件名前缀
 filename_prefix = 'extend';
-
-a_mul_max=50;%1.1\1.2\1.3\1.4……5
-h_sample_max=4;
-%c2,cerr2,c3,err3,,error,a_mul,h_sample,1+a_mul*0.5，length(samplingpoint)，length(train)，length(test)
+a_mul_max=50;%Ra的取值：1.1\1.2\1.3\1.4……5
+h_sample_max=4;%采样点间隔H
+%参数c2,c2范围,参数c3,c3范围err3,拓展最大误差error,a_mul,h_sample,拓展个数,1+a_mul*0.5，采样点个数length(samplingpoint)，采样前个数length(train)，拓展点个数length(test)
 temp=zeros(a_mul_max,h_sample_max,12);
+%参数c2,c2范围,参数c3,c3范围err3,拓展最大误差error,a_mul,h_sample,拓展个数,1+a_mul*0.5，采样点个数length(samplingpoint)，采样前个数length(train)，拓展点个数length(test)
 para_ana=zeros(a_mul_max*h_sample_max,12);
 for a_mul=1:a_mul_max
     for h_sample=1:h_sample_max
@@ -335,7 +342,7 @@ for a_mul=1:a_mul_max
             a_extend(i,6)=y(1,length(t));
         end
         
-        %c2,cerr2,c3,err3,,error,a_mul,h_sample,1+a_mul*0.5，length(samplingpoint)，length(train)，length(test)
+        %c2,cerr2,c3,err3,拓展最大误差,a_mul,h_sample,拓展个数,1+a_mul*0.5,length(samplingpoint)，length(train)，length(test)
         temp(a_mul,h_sample,5)=max(a_extend(:,3));
         temp(a_mul,h_sample,8)=length(a_extend(:,3));
         temp(a_mul,h_sample,9)=1+a_mul*0.5;
